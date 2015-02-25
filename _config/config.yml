@@ -1,0 +1,7 @@
+ContentController:
+  extensions:
+    - GoogleTrackingControllerExtension
+
+SiteConfig:
+  extensions:
+    - GoogleTrackingSiteConfigExtension
