@@ -123,6 +123,15 @@ function Tracker(devMode) {
 			nonInteractive = $element.attr('data-ga-noninteractive'),
 			terminate = $element.attr('data-ga-terminate'),
 			delay = $element.attr('data-ga-delay');
+			cond = $element.attr('data-ga-cond');
+
+		if (cond) {
+			cond = this.interpretValue(cond, $element);
+			if (!this.isCondTrue(cond)) {
+				// don't send GA event if the condition is present and does not resolve to true.
+				return;
+			}
+		}
 
 		// apply value interpretation to the fields we'll send
 		if (category) {
@@ -170,6 +179,18 @@ function Tracker(devMode) {
 			this.ga("send", "event", eventRequest);
 		}
 	}
+
+	this.isCondTrue = function(cond) {
+		if (typeof cond === 'undefined' || !cond || cond === null || cond === 0 || cond === false || cond === '') {
+			return false;
+		}
+
+		if (($.isArray(cond) || cond instanceof jQuery) && cond.length === 0) {
+			return false;
+		}
+
+		return true;
+	},
 
 	// Interpret a string attribute value in the context of $el.
 	this.interpretValue = function(s, $el) {
@@ -241,7 +262,10 @@ function Tracker(devMode) {
 			return o[f]($target);
 		}
 
-		return '';
+		// if we haven't asked for an attribute or text of the target, we might just
+		// be interested in knowing if there are elements, as can be the case with
+		// "cond".
+		return $target;
 	}
 
 	/**
