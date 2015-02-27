@@ -23,6 +23,27 @@ Configuration properties that are only settable in config.yml of your site inclu
 	Google universal_analytics.js script. This is for sites where the content
 	policy prohibits inclusion of cross-domain scripts.
 
+Also, you will need to bootstrap the javascript component of the module by doing the following:
+
+	(function($) {
+		var tracker = $.tracker;
+		$(document).ready(function () {
+			// add calls to tracker.addEventDef here if you are using them
+			...
+			tracker.init(500);
+		});
+	}) (jQuery);
+
+or a short form if you prefer:
+
+	(function($) {
+		$(document).ready(function () {
+			$.tracker.init(500);
+		});
+	}) (jQuery);
+
+The parameter to init() is used if there are delays in loading the google analytics javascript. Init will wait until it is loaded, and waits for this period each time (in milliseconds) before retrying.
+
 # Page Level Tracking
 
 The module will automatically add itself to ContentController, thereby including page tracking for all pages on the site. However, if you have a custom controller that does not extend ContentController, but you want tracking behaviour added, simple add the extension to your controller as well:
@@ -51,7 +72,7 @@ This will send tracking data to Google on click of the <a> element. The category
 The full list of supported atributes is:
 
 	data-ga-event
-			name of event to listen to. Can be 'click' or 'submit'.
+			name of event to listen to. Can be 'click', 'submit' or 'pageload'.
 	data-ga-category
 			category sent in tracking event
 	data-ga-action
@@ -68,8 +89,14 @@ The full list of supported atributes is:
 	data-ga-delay
 			if specified, it's value needs to be the number of milliseconds
 			to delay before triggering.
+	data-ga-cond
+			if specified, the value is evaluated to determine if the tracking
+			event should be sent. If null, empty string, false or 0, or an
+			array whose length is zero (including jQuery objects), the
+			tracking event won't be sent. Otherwise it will be.
 
-data-ga-category, data-ga-action, data-ga-label and data-ga-value attributes all use the same syntax for specifying values. If the attribute value is a JSON object, which will start with '{', the object specifies an expression for getting the value. Otherwise the value is interpreted as a literal. If a JSON object is provided, it can be of one of the following forms:
+data-ga-category, data-ga-action, data-ga-label, data-ga-value and data-ga-cond attributes all use the same syntax for specifying values. If the attribute value starts with an '@', the value specifies an expression for getting the value. Otherwise the value is interpreted as a literal. If an
+@-expression is used, it can be one of the following forms:
 
 	@attr:name 
 			get attribute value of this element
@@ -84,6 +111,9 @@ data-ga-category, data-ga-action, data-ga-label and data-ga-value attributes all
 			e.g. data-ga-label="@attr:value,@sel:span,@this"
 	
 
+	@text
+			get the inner text of the target element. Equivalent to calling
+			$target.text()
 
 	@call:functionName
 			call a named function to evaluate the value. This may be prohibited
@@ -92,7 +122,7 @@ data-ga-category, data-ga-action, data-ga-label and data-ga-value attributes all
 			global name space.
 			e.g. data-ga-label="@call:someobject.myMethod"
 
-Note you can also inject template variables, which allows server-side determination of :
+Note you can also inject template variables, which allows server-side determination of:
 
 	<div class="logo">
 		<a href="$HomePageLink"
@@ -101,7 +131,6 @@ Note you can also inject template variables, which allows server-side determinat
 			data-ga-action="header-logo"
 			data-ga-label="@attr:href"></a>
 	</div>
-
 
 ## Using JavaScript events
 
