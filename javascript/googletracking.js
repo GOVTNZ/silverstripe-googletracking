@@ -105,6 +105,11 @@ function Tracker(devMode) {
 		$('*[data-ga-event="submit"]').click(function(event) {
 			self.handleEvent(event, $(this));
 		});
+
+		// Handle pageload. handleEvent is called immediately
+		$('*[data-ga-event="pageload"]').each(function() {
+			self.handleEvent(null, $(this));
+		});
 	}
 
 		// this will handle an event called eventName on element. This will use attributes defined
