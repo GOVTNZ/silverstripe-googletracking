@@ -187,6 +187,7 @@ function Tracker(devMode) {
 			attrName = '',
 			fnName = '',
 			selector = '',
+			text = false,
 			selThis = false;
 
 		for (var i = 0; i < parts.length; i++) {
@@ -199,6 +200,9 @@ function Tracker(devMode) {
 					break;
 				case 'sel':
 					selector = val;
+					break;
+				case 'text':
+					text = val;
 					break;
 				case 'this':
 					if (val != 'false' && val != '0') {
@@ -221,6 +225,10 @@ function Tracker(devMode) {
 
 		if (attrName) {
 			return $target.attr(attrName);
+		}
+
+		if (text) {
+			return $target.text();
 		}
 
 		if (fnName) {
