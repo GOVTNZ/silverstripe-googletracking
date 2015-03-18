@@ -14,9 +14,9 @@ function Tracker(devMode) {
 	 * Call the underlying ga method, unless in dev mode when it is not called.
 	 */
 	this.ga = function() {
-		console.log("GA TRACKING EVENT");
+		this.log("GA TRACKING EVENT");
 		if (arguments.length > 2) {
-			console.log("...", arguments[2]);
+			this.log("...", arguments[2]);
 		}
 
 		if (!devMode) {
