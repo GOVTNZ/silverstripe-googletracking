@@ -172,11 +172,10 @@ function Tracker(devMode) {
 
 		if (delay) {
 			setTimeout(function() {
-				self.ga("send", "event", eventRequest);
+				self.sendEventObject(eventRequest);
 			}, delay);
-
 		} else {
-			this.ga("send", "event", eventRequest);
+			this.sendEventObject(eventRequest);
 		}
 	}
 
@@ -448,8 +447,77 @@ function Tracker(devMode) {
 	 * @param data
 	 */
 	this.sendEventObject = function(data) {
-		this.log(data)
+		this.log(data);
+		this.normaliseURLs(data);
 		this.ga('send', 'event', data);
+	}
+
+	// Normalise URLs so that if the site for some reason sends a mix of trailing slashes and non-trailing slashes,
+	// we'll standardise them. If the last past of the URL has a file extension we'll assume it's a file resource
+	// and won't add a trailing slash, otherwise we will if there isn't one already. If in doubt, don't change it.
+	// @todo pull apart so we get handle fragments and query fields correctly.
+	this.normaliseURLs = function(data) {
+		if (data && data.eventAction) {
+			data.eventAction = this.normaliseURL(data.eventAction);
+		}
+		if (data && data.eventLabel) {
+			data.eventLabel = this.normaliseURL(data.eventLabel);
+		}
+	};
+
+	// Normalise a URL. Note: it may not be a URL, so we check for that.
+	this.normaliseURL = function(url) {
+		// if it's not a full URL, don't change it.
+		if (url.substr(0, 7) !== 'http://' && url.substr(0, 8) !== 'https://') {
+			return url;
+		}
+
+		// if it has a fragment or query fields, don't change it. This is a limit
+		// of the current implementation.
+		if (url.indexOf('#') > 0 || url.indexOf('?') > 0 || url.indexOf('&') > 0) {
+			// we don't change the URL with these
+			return url;
+		}
+
+		// If the URL already ends with slash, don't change it.
+		if (url[url.length-1] == '/') {
+			// already slash terminated. We assume this is correct.
+			return url;
+		}
+
+		// calculate the URL minus protocol and domain. If it has anything after the domain,
+		// this will start with a slash.
+		var urlSansDomain = this.getRelativeURL(url);
+
+		var lastSegment = urlSansDomain.substr(urlSansDomain.lastIndexOf('/') + 1);
+		if (lastSegment.indexOf('.') >= 0) {
+			// it has a dot so we assume it's a file. It doesn't want a trailing slash
+			return url;
+		}
+
+		// if we get here, we know there are no fragments or query fields, and that the last segment is not
+		// a file, and it doesn't contain a trailing slash. So add a trailing slash.
+		return url + '/';
+	};
+
+	// Given a URL with no query fields or fragments, return it without the protocol or domain. May be
+	// empty string. Assumes URL starts with protocol.
+	this.getRelativeURL = function(url) {
+		// remove protocol
+		var i = url.indexOf('://');
+		if (i < 0) {
+			return '';
+		}
+		url = url.substr(i+3);
+
+		// remove domain. This is either up to but not including next slash, or the end of string.
+		i = url.indexOf('/');
+		if (i < 0) {
+			// it's all domain
+			return '';
+		}
+
+		return url.substr(i);
 	}
 }
 
