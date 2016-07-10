@@ -2,7 +2,7 @@
 	"name": "govtnz/googletracking",
 	"description": "A SilverStripe module to support flexible page and event level tracking to Google Analytics",
 	"type": "silverstripe-module",
-	"homepage": "http://github.com/govtnz/googletracking",
+	"homepage": "https://github.com/GOVTNZ/silverstripe-googletracking",
 	"keywords": ["silverstripe", "google"],
 	"license": "BSD-3-Clause",
 	"authors": [
